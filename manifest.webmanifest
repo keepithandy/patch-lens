@@ -1,0 +1,11 @@
+{
+  "name": "PatchLens QA Companion",
+  "short_name": "PatchLens",
+  "description": "Mobile-first test sessions, defect capture, regression tracking, and QA report export.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#08111f",
+  "theme_color": "#111827",
+  "orientation": "portrait-primary",
+  "icons": []
+}
