@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="PatchLens is a mobile-first QA companion for browser games and web apps.">
+  <title>PatchLens v0.1.0</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Keepithandy QA Toolkit</p>
+      <h1>PatchLens</h1>
+      <p class="subtitle">Test builds. Capture defects. Ship with confidence.</p>
+    </div>
+    <div class="header-status">
+      <span id="connectionBadge" class="badge">Local-first</span>
+      <span class="version">v0.1.0</span>
+    </div>
+  </header>
+
+  <main id="main" class="app-shell">
+    <section id="view-dashboard" class="view is-active" aria-labelledby="dashboard-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Release readiness</p>
+          <h2 id="dashboard-heading">QA Dashboard</h2>
+        </div>
+        <button id="newSessionButton" class="button button-primary" type="button">New test session</button>
+      </div>
+
+      <div id="statsGrid" class="stats-grid" aria-live="polite"></div>
+
+      <article class="panel active-session-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Current work</p>
+            <h3>Active session</h3>
+          </div>
+          <button id="resumeSessionButton" class="button button-secondary" type="button">Open session</button>
+        </div>
+        <div id="activeSessionSummary" class="empty-state">
+          No session is active. Start one to create a version-specific QA record.
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Tracked products</p>
+            <h3>Projects</h3>
+          </div>
+          <button id="addProjectButton" class="button button-ghost" type="button">Add project</button>
+        </div>
+        <div id="projectGrid" class="project-grid"></div>
+      </article>
+    </section>
+
+    <section id="view-session" class="view" aria-labelledby="session-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Structured verification</p>
+          <h2 id="session-heading">Test Session</h2>
+        </div>
+        <button id="finishSessionButton" class="button button-primary" type="button">Complete session</button>
+      </div>
+      <div id="sessionWorkspace" class="empty-state panel">
+        Start or select a session from the dashboard.
+      </div>
+    </section>
+
+    <section id="view-issues" class="view" aria-labelledby="issues-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Regression ledger</p>
+          <h2 id="issues-heading">Defects</h2>
+        </div>
+        <button id="quickIssueButton" class="button button-primary" type="button">Capture defect</button>
+      </div>
+      <div id="issueFilters" class="filter-row" aria-label="Issue filters"></div>
+      <div id="issueList" class="issue-list"></div>
+    </section>
+
+    <section id="view-reports" class="view" aria-labelledby="reports-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Reusable output</p>
+          <h2 id="reports-heading">Reports & Data</h2>
+        </div>
+      </div>
+
+      <div class="report-grid">
+        <article class="panel">
+          <h3>Release report</h3>
+          <p>Export the selected session as a developer-readable Markdown QA report.</p>
+          <label class="field-label" for="reportSessionSelect">Session</label>
+          <select id="reportSessionSelect"></select>
+          <button id="downloadMarkdownButton" class="button button-primary button-block" type="button">Download Markdown</button>
+        </article>
+
+        <article class="panel">
+          <h3>Codex repair prompt</h3>
+          <p>Generate a constrained implementation prompt from unresolved defects.</p>
+          <button id="copyCodexButton" class="button button-secondary button-block" type="button">Copy Codex prompt</button>
+        </article>
+
+        <article class="panel">
+          <h3>Portable data</h3>
+          <p>Export or restore PatchLens data without a backend.</p>
+          <div class="button-stack">
+            <button id="exportJsonButton" class="button button-secondary button-block" type="button">Export JSON</button>
+            <label class="button button-ghost button-block file-button">
+              Import JSON
+              <input id="importJsonInput" type="file" accept="application/json,.json">
+            </label>
+          </div>
+        </article>
+      </div>
+
+      <article class="panel preview-panel">
+        <div class="panel-heading">
+          <h3>Report preview</h3>
+          <button id="copyReportButton" class="button button-ghost" type="button">Copy</button>
+        </div>
+        <pre id="reportPreview">Select a session to preview its report.</pre>
+      </article>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Primary navigation">
+    <button class="nav-item is-active" type="button" data-view="dashboard"><span>Dashboard</span></button>
+    <button class="nav-item" type="button" data-view="session"><span>Session</span></button>
+    <button class="nav-item" type="button" data-view="issues"><span>Defects</span></button>
+    <button class="nav-item" type="button" data-view="reports"><span>Reports</span></button>
+  </nav>
+
+  <dialog id="sessionDialog" class="dialog">
+    <form id="sessionForm" method="dialog" class="dialog-card">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">New QA record</p>
+          <h2>Start test session</h2>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="Close">×</button>
+      </div>
+      <label>
+        Project
+        <select id="sessionProject" required></select>
+      </label>
+      <label>
+        Version or build
+        <input id="sessionVersion" required placeholder="e.g. v1.25.2">
+      </label>
+      <div class="field-grid">
+        <label>
+          Device
+          <input id="sessionDevice" required value="iPhone 15 Plus">
+        </label>
+        <label>
+          Browser
+          <input id="sessionBrowser" required value="Safari / Textastic preview">
+        </label>
+      </div>
+      <label>
+        Test objective
+        <textarea id="sessionObjective" rows="3" placeholder="What changed, and what must remain stable?"></textarea>
+      </label>
+      <div class="dialog-actions">
+        <button class="button button-ghost" value="cancel" type="button" data-close-dialog="sessionDialog">Cancel</button>
+        <button class="button button-primary" value="default" type="submit">Start session</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="issueDialog" class="dialog">
+    <form id="issueForm" method="dialog" class="dialog-card dialog-card-large">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Evidence-backed defect</p>
+          <h2>Capture defect</h2>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="Close">×</button>
+      </div>
+      <label>
+        Session
+        <select id="issueSession" required></select>
+      </label>
+      <label>
+        Defect title
+        <input id="issueTitle" required placeholder="e.g. Bottom nav sits behind iPhone controls">
+      </label>
+      <div class="field-grid">
+        <label>
+          Severity
+          <select id="issueSeverity">
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </label>
+        <label>
+          Component
+          <input id="issueComponent" required placeholder="Navigation, save, modal…">
+        </label>
+      </div>
+      <label>
+        Expected behavior
+        <textarea id="issueExpected" rows="2" required></textarea>
+      </label>
+      <label>
+        Actual behavior
+        <textarea id="issueActual" rows="2" required></textarea>
+      </label>
+      <label>
+        Reproduction steps
+        <textarea id="issueSteps" rows="4" required placeholder="1. Open…&#10;2. Tap…&#10;3. Observe…"></textarea>
+      </label>
+      <label>
+        Screenshot evidence <span class="hint">Optional, up to 1 MB</span>
+        <input id="issueScreenshot" type="file" accept="image/*">
+      </label>
+      <div class="dialog-actions">
+        <button class="button button-ghost" value="cancel" type="button" data-close-dialog="issueDialog">Cancel</button>
+        <button class="button button-primary" value="default" type="submit">Save defect</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="projectDialog" class="dialog">
+    <form id="projectForm" method="dialog" class="dialog-card">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Project registry</p>
+          <h2>Add project</h2>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="Close">×</button>
+      </div>
+      <label>
+        Project name
+        <input id="projectName" required placeholder="Project name">
+      </label>
+      <label>
+        Repository <span class="hint">Optional</span>
+        <input id="projectRepo" placeholder="keepithandy/project-name">
+      </label>
+      <label>
+        Primary test target
+        <input id="projectTarget" placeholder="Mobile browser, desktop, PWA…">
+      </label>
+      <div class="dialog-actions">
+        <button class="button button-ghost" value="cancel" type="button" data-close-dialog="projectDialog">Cancel</button>
+        <button class="button button-primary" value="default" type="submit">Add project</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="model.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
